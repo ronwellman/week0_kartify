@@ -21,21 +21,24 @@ st.set_page_config(
     layout="centered",
 )
 
-# Find API credentials in environment variables
-OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', None)
-OPENAI_API_BASE = os.environ.get("OPENAI_BASE_URL", None)
+# Load API credentials: Streamlit secrets (.streamlit/secrets.toml locally,
+# the Secrets UI on Streamlit Cloud) take priority, with a plain env var fallback
+# for other deployment targets.
+def _load_credential(key: str) -> str | None:
+    return st.secrets.get(key) or os.environ.get(key)
 
-# Fallback to config file
-if OPENAI_API_KEY is None or OPENAI_API_BASE is None:
-    # Load the JSON file and extract values
-    file_name = 'config.json'
-    with open(file_name, 'r') as file:
-        config = json.load(file)
-        OPENAI_API_KEY = config.get("OPENAI_API_KEY") # Loading the API Key
-        OPENAI_API_BASE = config.get("OPENAI_API_BASE") # Loading the API Base Url
+OPENAI_API_KEY = _load_credential("OPENAI_API_KEY")
+OPENAI_BASE_URL = _load_credential("OPENAI_BASE_URL")
 
-if OPENAI_API_KEY is None or OPENAI_API_BASE is None:
-    raise ValueError("API Credentials not found")
+if not OPENAI_API_KEY or not OPENAI_BASE_URL:
+    st.error(
+        "Missing OPENAI_API_KEY / OPENAI_BASE_URL. Set them under Settings → "
+        "Secrets in Streamlit Cloud, or in .streamlit/secrets.toml locally."
+    )
+    st.stop()
+
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+os.environ["OPENAI_BASE_URL"] = OPENAI_BASE_URL
 
 # ── LLMs ─────────────────────────────────────────────────────────────────────
 @st.cache_resource
