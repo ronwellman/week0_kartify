@@ -28,17 +28,17 @@ def _load_credential(key: str) -> str | None:
     return st.secrets.get(key) or os.environ.get(key)
 
 OPENAI_API_KEY = _load_credential("OPENAI_API_KEY")
-OPENAI_BASE_URL = _load_credential("OPENAI_BASE_URL")
+OPENAI_API_BASE = _load_credential("OPENAI_API_BASE")
 
-if not OPENAI_API_KEY or not OPENAI_BASE_URL:
+if not OPENAI_API_KEY or not OPENAI_API_BASE:
     st.error(
-        "Missing OPENAI_API_KEY / OPENAI_BASE_URL. Set them under Settings → "
+        "Missing OPENAI_API_KEY / OPENAI_API_BASE. Set them under Settings → "
         "Secrets in Streamlit Cloud, or in .streamlit/secrets.toml locally."
     )
     st.stop()
 
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
-os.environ["OPENAI_BASE_URL"] = OPENAI_BASE_URL
+os.environ["OPENAI_API_BASE"] = OPENAI_API_BASE
 
 # ── LLMs ─────────────────────────────────────────────────────────────────────
 @st.cache_resource
